@@ -1,0 +1,29 @@
+{
+  "name": "taskwave",
+  "version": "0.0.0",
+  "license": "MIT",
+  "description": "Package to execute tasks on a worker pool to deal with a wave of CPU heavy tasks.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "npm run compile",
+    "compile": "rm -rf dist/ && tsc -p ./",
+    "prepublishOnly": "npm run build",
+    "pretest": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LucaCode/taskwave.git"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "author": {
+    "name": "Luca Scarignella",
+    "email": "lucacode1@gmail.com",
+    "url": "https://luca.scaringella.de"
+  },
+  "devDependencies": {
+    "typescript": "^3.8.3"
+  }
+}
