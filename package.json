@@ -5,6 +5,18 @@
   "description": "Package to execute tasks on a worker pool to deal with a wave of CPU heavy tasks.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "keywords": [
+    "multithreading",
+    "CPU heavy tasks",
+    "web workers",
+    "threads",
+    "parallel",
+    "calculations",
+    "performance",
+    "non-blocking",
+    "pool",
+    "worker pool"
+  ],
   "scripts": {
     "build": "npm run compile",
     "compile": "rm -rf dist/ && tsc -p ./",
