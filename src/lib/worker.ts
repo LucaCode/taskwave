@@ -107,7 +107,7 @@ export default class Worker<T extends (...args: any[]) => any> {
         else {
             return Worker.createScriptTask(process,preparedTask) +
                 "onmessage = (e) => task(...e.data).then(r => postMessage([1,r])).catch(err => postMessage([2,err]));" +
-                "parentPort.postMessage([0])";
+                "postMessage([0])");
         }
     }
 
