@@ -13,8 +13,8 @@ export default class TaskWorkerPool<T extends (...args: any[]) => any> {
 
     private _waitForWorker: ([(worker: Worker<T>) => void,(err: any) => void])[] = [];
 
-    constructor(process: T, preparedTask: boolean, private poolSize: number, private createTempWorker: boolean) {
-        const script = Worker.createScript(process,preparedTask);
+    constructor(process: T, preparedArgs: any[] | undefined, private poolSize: number, private createTempWorker: boolean) {
+        const script = Worker.createScript(process,preparedArgs);
         this.script = script;
 
         for(let i = 0; i < poolSize; i++){

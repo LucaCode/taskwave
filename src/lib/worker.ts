@@ -7,6 +7,16 @@ if(windowNotDefined) {
     NodeWorker = require('worker_threads').Worker;
 }
 
+const typescriptAwaiter = ('var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {' +
+    '    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }' +
+    '    return new (P || (P = Promise))(function (resolve, reject) {' +
+    '        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }' +
+    '        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }' +
+    '        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }' +
+    '        step((generator = generator.apply(thisArg, _arguments || [])).next());' +
+    '    });' +
+    '};');
+
 export const enum MessageEvent {
     WorkerReady,
     Result,
@@ -89,26 +99,31 @@ export default class Worker<T extends (...args: any[]) => any> {
         }
     }
 
-    private static createScriptTask(process: (...args: any[]) => any, preparedTask: boolean) {
-        if(preparedTask){
-            return `const _task = (${process.toString()})();` +
+    private static createScriptTask(scriptProcess: string, preparedArgs?: any[]) {
+        if(preparedArgs){
+            return `const _task = await (${scriptProcess})(...(JSON.parse("${JSON.stringify(preparedArgs)}")));` +
                 `const task = (async (...args) => _task(...args));`
         }
-        return `const task = (async (...args) => (${process.toString()})(...args));`
+        return `const task = (async (...args) => (${scriptProcess})(...args));`
     }
 
-    static createScript(process: (...args: any[]) => any, preparedTask: boolean): string {
+    static createScript(process: (...args: any[]) => any, preparedArgs?: any[]): string {
+        const scriptProcess = process.toString();
+        let res = scriptProcess.indexOf('__awaiter') !== -1 ? typescriptAwaiter : '';
+        res += "(async () => {"
         if(windowNotDefined) {
-            return "const parentPort = require('worker_threads').parentPort;" +
-                Worker.createScriptTask(process,preparedTask) +
+            res += ("const parentPort = require('worker_threads').parentPort;" +
+                Worker.createScriptTask(scriptProcess,preparedArgs) +
                 "parentPort.on('message',(args) => task(...args).then(r => parentPort.postMessage([1,r])).catch(err => parentPort.postMessage([2,err])));" +
-                "parentPort.postMessage([0])";
+                "parentPort.postMessage([0])");
         }
         else {
-            return Worker.createScriptTask(process,preparedTask) +
-                "onmessage = (e) => task(...e.data).then(r => postMessage([1,r])).catch(err => postMessage([2,err]));" +
+            res += (Worker.createScriptTask(scriptProcess,preparedArgs) +
+                "onmessage = (e) => task(...(e.data)).then(r => postMessage([1,r])).catch(err => postMessage([2,err]));" +
                 "postMessage([0])");
         }
+        res += "})()";
+        return res.replace(/(\r\n|\n|\r)/gm, "");
     }
 
     private doneProcess() {
