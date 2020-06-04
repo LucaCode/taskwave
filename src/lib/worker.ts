@@ -115,12 +115,12 @@ export default class Worker<T extends (...args: any[]) => any> {
             res += ("const parentPort = require('worker_threads').parentPort;" +
                 Worker.createScriptTask(scriptProcess,preparedArgs) +
                 "parentPort.on('message',(args) => task(...args).then(r => parentPort.postMessage([1,r])).catch(err => parentPort.postMessage([2,err])));" +
-                "parentPort.postMessage([0])");
+                "parentPort.postMessage([0]);");
         }
         else {
             res += (Worker.createScriptTask(scriptProcess,preparedArgs) +
                 "onmessage = (e) => task(...(e.data)).then(r => postMessage([1,r])).catch(err => postMessage([2,err]));" +
-                "postMessage([0])");
+                "postMessage([0]);");
         }
         res += "})()";
         return res.replace(/(\r\n|\n|\r)/gm, "");
