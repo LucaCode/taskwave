@@ -123,7 +123,7 @@ export default class Worker<T extends (...args: any[]) => any> {
                 "postMessage([0]);");
         }
         res += "})()";
-        return res.replace(/(\r\n|\n|\r)/gm, "");
+        return res;
     }
 
     private doneProcess() {
