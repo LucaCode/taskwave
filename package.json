@@ -1,6 +1,6 @@
 {
   "name": "taskwave",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "MIT",
   "description": "Package to execute tasks on a worker pool to deal with a wave of CPU heavy tasks.",
   "main": "dist/index.js",
