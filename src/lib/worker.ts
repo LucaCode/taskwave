@@ -147,7 +147,7 @@ export default class Worker<T extends (...args: any[]) => any> {
     }
 
     canBeUsed(): boolean {
-        return !!this.process && this.ready;
+        return !this.process && this.ready;
     }
 
     destroy() {
