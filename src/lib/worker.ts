@@ -29,6 +29,7 @@ export default class Worker<T extends (...args: any[]) => any> {
 
     private readyPromise: Promise<void>;
     private _resolveReady: () => void;
+    private _rejectReady: (err: any) => void;
     private ready: boolean = false;
 
     private process: Promise<PromiseValue<ReturnType<T>>> | undefined;
@@ -40,11 +41,17 @@ export default class Worker<T extends (...args: any[]) => any> {
     private readonly sendToWorker: (...args: Parameters<T>) => void;
 
     constructor(script: string) {
-        this.readyPromise = new Promise<void>(resolve => {this._resolveReady = resolve});
+        this.readyPromise = new Promise<void>((resolve, reject) => {
+            this._resolveReady = resolve;
+            this._rejectReady = reject;
+        });
         if (windowNotDefined) {
             const worker = new NodeWorker(script, { eval: true });
             worker.on('message', ([event, data]) => this.onMessage(event,data));
-            worker.on('error', (err) => this.rejectProcess(err));
+            worker.on('error', (err) => {
+                this.rejectProcess(err);
+                this._rejectReady(err);
+            });
             this.destroyWorker = () => worker.terminate();
             this.sendToWorker = (...args) => worker.postMessage(args);
         } else {
@@ -101,7 +108,7 @@ export default class Worker<T extends (...args: any[]) => any> {
 
     private static createScriptTask(scriptProcess: string, preparedArgs?: any[]) {
         if(preparedArgs){
-            return `const _task = await (${scriptProcess})(...(JSON.parse("${JSON.stringify(preparedArgs)}")));` +
+            return `const _task = await (${scriptProcess})(...(JSON.parse("${JSON.stringify(preparedArgs).replace(/"/g, "\\\"")}")));` +
                 `const task = (async (...args) => _task(...args));`
         }
         return `const task = (async (...args) => (${scriptProcess})(...args));`
